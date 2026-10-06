@@ -133,6 +133,7 @@
 .studio-host .error-copy p, .studio-host .error-copy summary { font-size: 12px; margin: 4px 0 0; }
 .studio-host .error-copy code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; color: var(--muted); }
 .studio-host .success-notice { display: flex; gap: 10px; align-items: center; color: var(--success); border: 1px solid #38604A; padding: 14px 16px; margin-bottom: 24px; border-radius: 6px; font-size: 13px; }
+.studio-host .published-link { margin-left: auto; color: var(--text); font-weight: 600; }
 .studio-host footer { color: var(--muted); font-size: 11px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
 .studio-host .health-panel { margin-bottom: 16px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 12px; }
 .studio-host .health-panel summary { cursor: pointer; min-height: 32px; align-content: center; }

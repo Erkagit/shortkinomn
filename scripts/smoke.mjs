@@ -64,10 +64,8 @@ try {
   const paid = await api('/admin/episodes', body({ movie_id: movie.id, episode_number: 6, title: 'Үргэлжлэл' }));
   assert.equal((await api('/admin/episodes')).find(e => e.id === free.id).is_free, 1);
   assert.equal((await api('/admin/episodes')).find(e => e.id === paid.id).is_free, 0);
-  await api(`/admin/movies/${movie.id}`, { ...body({ ...movieData, status: 'PUBLISHED' }), method: 'PUT' });
-  assert.equal((await api('/catalog/movies?q=Mystery', {}, '')).total, 1);
-  assert.equal((await api('/catalog/movies?category=romance', {}, '')).total, 1);
-  assert.equal((await api('/catalog/home', {}, '')).featured.id, movie.id);
+  assert.equal((await api('/catalog/movies?q=Mystery', {}, '')).total, 0, 'Draft movies stay private');
+  assert.equal((await api('/catalog/home', {}, '')).featured, null);
   const health = await api('/health'); assert.equal(health.mode, 'demo'); assert.equal(health.ffmpeg, true);
   const bytes = await fs.readFile(path.join(root, 'data/demo-input.mp4'));
   async function upload(episodeId) {
@@ -93,7 +91,13 @@ try {
     assert.equal(job.outputs[target.id === free.id ? 'dubbed' : 'subtitles'], true, 'Only existing reviewed output is available');
     assert.equal((await request(`/admin/episodes/${target.id}/publish`, body({ jobId, version: target.id === free.id ? 'dubbed' : 'subtitles', approved: false }))).status, 400);
     assert.equal((await request(`/admin/episodes/${target.id === free.id ? paid.id : free.id}/publish`, body({ jobId, version: 'dubbed', approved: true }))).status, 409);
-    await api(`/admin/episodes/${target.id}/publish`, body({ jobId, version: target.id === free.id ? 'dubbed' : 'subtitles', approved: true }));
+    const publication = await api(`/admin/episodes/${target.id}/publish`, body({ jobId, version: target.id === free.id ? 'dubbed' : 'subtitles', approved: true }));
+    assert.equal(publication.movie.status, 'PUBLISHED');
+    assert.equal(publication.publicUrl, '/movies/test-story');
+    assert.equal((await api(`/admin/movies/${movie.id}`)).movie.status, 'PUBLISHED');
+    assert.equal((await api('/catalog/movies?q=Mystery', {}, '')).total, 1, 'Publishing an episode makes its draft movie public');
+    assert.equal((await api('/catalog/movies?category=romance', {}, '')).total, 1);
+    assert.equal((await api('/catalog/home', {}, '')).featured.id, movie.id);
     if (target.id === free.id) {
       await assert.rejects(() => save({ ...job, revision: job.revision - 1 }, {}));
       job = await save(job, { segments: job.segments.map((s, i) => i === 0 ? { ...s, source: 'Changed source.' } : s) });

@@ -3,7 +3,7 @@ export {ApiError} from './api-error';
 export interface User { id: string; email: string; name: string; avatar: string; role: 'USER' | 'ADMIN' }
 export interface Category { id: string; name: string; slug: string }
 export interface Movie { id: string; slug: string; title_mn: string; title_original: string; description: string; poster_url: string; backdrop_url: string; trailer_url: string; year: number; country: string; price: number; status: string; featured: number; trending: number; new_release: number; total_episodes: number; episode_count: number; free_episode_count: number; free_intro_count: number; categories: Category[]; genres: Category[] }
-export interface Episode { completed?:number; current_time?:number; id: string; movie_id: string; episode_number: number; title: string; duration: number; is_free: number; status: string; locked: boolean; job_id?: string; title_mn?: string }
+export interface Episode { completed?:number; current_time?:number; id: string; movie_id: string; episode_number: number; title: string; duration: number; is_free: number; status: string; locked: boolean; job_id?: string; title_mn?: string; movie_slug?: string }
 export interface Progress { episode_id: string; current_time: number; duration: number; completed: number; episode_number: number; movie: Movie }
 export interface Library { progress: Progress[]; continueWatching: Progress[]; favorites: Movie[]; purchased: Movie[] }
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {

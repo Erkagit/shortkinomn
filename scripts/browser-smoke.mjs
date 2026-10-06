@@ -163,14 +163,28 @@ try{
   assert.equal(await evaluate("document.querySelector('.result-banner a').getAttribute('href').endsWith('/subtitle-preview.mp4')"),true);
   assert.equal(await evaluate("document.querySelector('.voice-list, .clone-card, .bed-controls, .final-action') === null"),true);
   assert.equal(network.some(r=>/\/render$|\/voices\/clone$|\/bed$/.test(new URL(r.url).pathname)),false,'No dubbing requests from subtitle workflow');
+  for(const width of widths){await viewport(width);assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true,'Studio preview overflow '+width);if([390,1440].includes(width))await capture('shortkinomn-preview-'+width);}
   await clickButton('Хадмалтай');await until('document.querySelector(".video-frame video")?.readyState>=1');
   await evaluate("document.querySelector('.video-frame video').muted=true;document.querySelector('.video-frame video').play()");
   await until("!document.querySelector('.publish-box input[type=checkbox]').disabled");
   assert.equal(await evaluate("document.querySelector('.publish-box button').disabled"),true,'Preview alone does not publish');
-  for(const width of widths){await viewport(width);assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true,'Studio preview overflow '+width);if([390,1440].includes(width))await capture('shortkinomn-preview-'+width);}
-  await evaluate("document.querySelector('.publish-box input[type=checkbox]').click()");await clickButton('Анги нийтлэх');
-  await until("document.body.innerText.includes('Анги нийтлэгдлээ.')");
+  await evaluate("const v=document.querySelector('.video-frame video');v.currentTime=0;v.muted=true;v.play()");
+  await until("document.querySelector('.video-frame video').currentTime>0.2");
+  await until("!document.querySelector('.publish-box input[type=checkbox]').disabled");
+  await evaluate("document.querySelector('.publish-box input[type=checkbox]').click()");
+  await until("!Array.from(document.querySelectorAll('.publish-box button')).find(b=>b.textContent.trim()==='Нийтлэх').disabled");
+  await clickButton('Нийтлэх');
+  await until("document.body.innerText.includes('Кино амжилттай нийтлэгдлээ.')");
+  assert.equal(await evaluate("document.querySelector('.published-link')?.getAttribute('href')"),'/movies/story-0');
   const published=await api('/admin/movies/'+movie.id);assert.equal(published.episodes.find(e=>e.id===episode.id).status,'PUBLISHED');
+  const publicMovie=await api('/catalog/movies/story-0');assert.equal(publicMovie.movie.status,'PUBLISHED');assert.ok(publicMovie.episodes.some(e=>e.id===episode.id));
+  assert.equal((await fetch(`http://127.0.0.1:4020/api/stream/${episode.id}/video`,{headers})).status,200);
+  assert.equal((await fetch(`http://127.0.0.1:4020/api/stream/${episode.id}/subtitles`,{headers})).status,200);
+  await navigate('/movies/story-0','Ангиуд');
+  await navigate('/watch/'+episode.id,'Бүх анги');await until('document.querySelector("video")?.readyState>=1');
+  assert.equal(await evaluate(`document.querySelector('video').getAttribute('src')==='/api/stream/${episode.id}/video'`),true);
+  assert.equal(await evaluate(`document.querySelector('video track')?.getAttribute('src')==='/api/stream/${episode.id}/subtitles'`),true);
+  await evaluate('document.querySelector("video").muted=true;document.querySelector("video").play()');await until('document.querySelector("video").currentTime>0');
   // Jobs failures stay visible; a retry fetches the actual backend response.
   intercept=p=>send('Fetch.fulfillRequest',{requestId:p.requestId,responseCode:500,responseHeaders:[{name:'Content-Type',value:'application/json'}],body:Buffer.from(JSON.stringify({error:{code:'TEST_ERROR',message:'Туршилтын серверийн алдаа',requestId:'browser-test-request'}})).toString('base64')});
   await send('Fetch.enable',{patterns:[{urlPattern:'*/api/jobs'}]});await navigate('/admin/jobs','HTTP 500');await send('Fetch.disable');intercept=null;
@@ -184,6 +198,3 @@ try{
   console.log('PASS: Chromium at 360/390/768/1280/1440; home/detail/player, free 5 → paid 6, keyboard/Escape/reduced motion, loading/empty/non-JSON retry, admin login, 16 MB upload, automatic subtitles without TTS, explicit preview/review/publish, jobs 200 and injected 500 retry; no overflow or browser exceptions. Screenshots: docs/screenshots.');
 }catch(error){console.error(logs.slice(-12).join(''));throw error;}
 finally{ws?.close();for(const child of children.reverse()){if(child.exitCode===null){child.kill();await Promise.race([once(child,'exit'),new Promise(r=>setTimeout(r,3000))]);}}for(let i=0;i<generatedFiles.length;i++)await fs.writeFile(path.join(root,generatedFiles[i]),savedGenerated[i]);const resolved=path.resolve(temp);if(!resolved.startsWith(path.resolve(os.tmpdir())+path.sep)||!path.basename(resolved).startsWith('duulav-browser-'))throw Error('Unsafe cleanup');await fs.rm(resolved,{recursive:true,force:true,maxRetries:5,retryDelay:300});}
-
-
-

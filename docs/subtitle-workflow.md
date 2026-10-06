@@ -18,6 +18,8 @@ Existing published episodes and stored dubbing outputs are unchanged.
 7. Preview the MP4 with its Mongolian VTT track, then approve publication.
 8. `POST /api/admin/episodes/:id/publish`: explicitly send
    `{ jobId, version: "subtitles", approved: true }`.
+   This admin-only action stores the published video and VTT snapshot, publishes the episode
+   and its parent movie together, and returns the public movie URL.
 
 Poll `GET /api/jobs/:id` for progress and output availability. Subtitle output
 readiness is `outputs.subtitles`; `status=completed` belongs to the existing

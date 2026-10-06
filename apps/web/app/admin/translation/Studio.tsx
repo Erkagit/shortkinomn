@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { Icon } from '../../../components/Icon';
 import { VideoUploader } from '../../../components/VideoUploader';
 import type { Health, Job } from '../../types';
@@ -42,7 +43,7 @@ function TechnicalAlert({ error, dismiss }: { error: string; dismiss: () => void
   </section>;
 }
 
-export default function Studio({ episodeId, initialJobId, movieTitle, episodeNumber }: { episodeId: string; initialJobId?: string; movieTitle: string; episodeNumber: number }) {
+export default function Studio({ episodeId, initialJobId, movieTitle, movieSlug, episodeNumber, episodeStatus }: { episodeId: string; initialJobId?: string; movieTitle: string; movieSlug: string; episodeNumber: number; episodeStatus: string }) {
   const [health, setHealth] = useState<Health>();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [job, setJob] = useState<Job>();
@@ -59,6 +60,7 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
   const [subtitlePreview, setSubtitlePreview] = useState(false);
   const [approved, setApproved] = useState(false);
   const [publishVersion, setPublishVersion] = useState<'subtitles' | 'dubbed'>('subtitles');
+  const [publishedUrl, setPublishedUrl] = useState(episodeStatus === 'PUBLISHED' && movieSlug ? `/movies/${encodeURIComponent(movieSlug)}` : '');
   const dirty = useRef(false);
   const running = useRef(false);
   const uploadKey = useRef('');
@@ -101,6 +103,7 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
     setViewedVersion('');
     setNotice('');
     setApproved(false);
+    setPublishedUrl('');
     setAllowUncertain(false);
   }
 
@@ -251,6 +254,19 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
     });
   }
 
+  async function publish() {
+    if (!job || !draft) return;
+    await task('Нийтэлж байна…', async () => {
+      if (dirty.current) throw Error('Эхлээд өөрчлөлтөө хадгалж, хувилбараа дахин бэлтгэнэ үү.');
+      const result = await api<{ publicUrl: string }>(`/admin/episodes/${episodeId}/publish`, {
+        method: 'POST',
+        body: JSON.stringify({ jobId: job.id, version: dubbingEnabled ? publishVersion : 'subtitles', approved: true }),
+      });
+      setPublishedUrl(result.publicUrl);
+      setNotice('Кино амжилттай нийтлэгдлээ.');
+    });
+  }
+
   async function replaceBed(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!job || !bedFile) return;
@@ -285,12 +301,20 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
     setProcessed(false);
     setError('');
     setNotice('');
+    setPublishedUrl('');
     setBackground(dubbingEnabled && health?.mode === 'live' ? 'api' : 'none');
   }
 
   const hasAllVoices = Boolean(draft && speakers.every((speaker) => draft.voices[speaker]?.trim() && speaker !== 'UNKNOWN'));
   const canRender = Boolean(draft?.translationReviewed && draft.segments.every((segment) => segment.target.trim()));
   const isBedReady = Boolean(draft && (draft.background === 'none' || draft.bedReviewed));
+  const publishBlockReason = !job?.outputs?.[publishVersion]
+    ? publishVersion === 'subtitles' ? 'Хадмалтай боловсруулсан видео бэлэн болоогүй байна.' : 'Дубляжтай боловсруулсан видео бэлэн болоогүй байна.'
+    : !draft?.translationReviewed ? 'Монгол орчуулгыг шалгаж, хадгална уу.'
+    : viewedVersion !== publishVersion ? 'Нийтлэх хувилбарыг preview дээр тоглуулж шалгана уу.'
+    : !approved ? 'Шалгалтын зөвшөөрлийг тэмдэглэнэ үү.'
+    : dirty.current ? 'Эхлээд өөрчлөлтөө хадгалж, хувилбараа дахин бэлтгэнэ үү.'
+    : '';
   const processingProgress = job?.progress ?? activity;
   const progressMatch = processingProgress.match(/(\d+)\s*\/\s*(\d+)/);
   const progressValue = progressMatch && Number(progressMatch[2]) > 0 ? Math.min(100, Math.round((Number(progressMatch[1]) / Number(progressMatch[2])) * 100)) : undefined;
@@ -307,7 +331,7 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
       {error && <TechnicalAlert dismiss={() => setError('')} error={error} />}
       {job?.errorCode==='PROVIDER_OUTCOME_UNKNOWN'&&<label className="checkbox-row"><input type="checkbox" checked={allowUncertain} onChange={event=>setAllowUncertain(event.target.checked)}/>Provider-ийн хэрэглээг шалгасан. Давхар төлбөр гарах эрсдэлтэй дахин оролдлогыг зөвшөөрнө.</label>}
       {job && ['failed','cancelled'].includes(job.status) && job.lastAction && (dubbingEnabled || job.lastAction !== 'render') && <button className="secondary" disabled={busy || (job.errorCode==='PROVIDER_OUTCOME_UNKNOWN'&&!allowUncertain)} onClick={() => void action(job.lastAction!)}>Тасарсан алхмыг дахин ажиллуулах</button>}
-      {notice && <div className="success-notice" role="status"><Icon name="check" />{notice}</div>} 
+      {notice && <div className="success-notice" role="status"><Icon name="check" />{notice}{publishedUrl && <Link className="published-link" href={publishedUrl}>Үндсэн сайтаас үзэх →</Link>}</div>}
       <Workflow stage={workflowStage(job, draft)} />
       <p className="next-step" role="status"><strong>Дараагийн алхам:</strong> {busy ? (job?.progress || activity) : job?.status==='failed'||job?.status==='cancelled' ? 'Алдааны тайлбарыг шалгаад тасарсан алхмаа үргэлжлүүлнэ үү.' : ['Кино, ангиа шалгаад видео файлаа оруулна уу.', 'Хадмал бэлтгэх үйлдлээр яриа таних, орчуулах алхмууд үргэлжилнэ.', 'Монгол орчуулгыг бэлтгэж, мөр бүрийг хянаад хадгална уу.', dubbingEnabled ? 'Хоолойгоо тохируулаад дубляж эсвэл хадмалтай хувилбар бэлтгэнэ үү.' : 'Монгол хадмалтай хувилбараа бэлтгэнэ үү.', 'Бэлэн хувилбарыг тоглуулж шалгаад, доорх нийтлэх хэсэгт батална уу.'][workflowStage(job, draft)]}</p>
       {job?.busy&&<button className="secondary cancel-job" disabled={cancelling} onClick={()=>void cancelJob()}>Боловсруулалтыг цуцлах</button>}
@@ -318,7 +342,7 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
             <div className="title"><div><span className="eyebrow">УРЬДЧИЛАН ҮЗЭХ</span><h2>{job?.name ?? video?.name ?? 'Видеогоо урьдчилан харах'}</h2></div>{job && <span className="pill">{labels[job.status] ?? job.status}</span>}</div>
             <div className="preview-tabs"><button className={!processed && !subtitlePreview ? 'selected' : ''} onClick={() => { setPreviewError(false); setProcessed(false); setSubtitlePreview(false); }} type="button">Эх видео</button><button className={subtitlePreview ? 'selected' : ''} disabled={!job?.outputs?.subtitles || busy} onClick={() => { setPreviewError(false); setProcessed(false); setSubtitlePreview(true); }} type="button">Хадмалтай</button>{dubbingEnabled && <button className={processed ? 'selected' : ''} disabled={!job?.outputs?.dubbed || busy} onClick={() => { setPreviewError(false); setProcessed(true); setSubtitlePreview(false); }} type="button">Дубляжтай</button>}{job && <span><Icon name="clock" /> {formatDuration(job.duration)}</span>}</div>
             <div className="video-frame">
-              {videoSrc ? <video key={videoSrc} controls playsInline preload="metadata" src={videoSrc} aria-label="Боловсруулж буй ангийн preview" onError={() => setPreviewError(true)} onPlay={() => { if (processed || subtitlePreview) setViewedVersion(processed ? 'dubbed' : 'subtitles'); }}>{subtitlePreview && job && <track default kind="subtitles" srcLang="mn" label="Монгол" src={`/api/jobs/${job.id}/files/preview.mn.vtt`}/>}</video> : <div className="video-empty"><span><Icon name="film" /></span><strong>Видео энд харагдана</strong><small>Клипээ сонгоход урьдчилан харах боломжтой.</small></div>}
+              {videoSrc ? <video key={videoSrc} controls playsInline preload="metadata" src={videoSrc} aria-label="Боловсруулж буй ангийн preview" onError={() => setPreviewError(true)} onPlay={() => { if (processed || subtitlePreview) setViewedVersion(processed ? 'dubbed' : 'subtitles'); }} onTimeUpdate={() => { if (processed || subtitlePreview) setViewedVersion(processed ? 'dubbed' : 'subtitles'); }}>{subtitlePreview && job && <track default kind="subtitles" srcLang="mn" label="Монгол" src={`/api/jobs/${job.id}/files/preview.mn.vtt`}/>}</video> : <div className="video-empty"><span><Icon name="film" /></span><strong>Видео энд харагдана</strong><small>Клипээ сонгоход урьдчилан харах боломжтой.</small></div>}
               <span className="video-tag">{processed ? 'ДУБЛЯЖТАЙ' : subtitlePreview ? 'ХАДМАЛТАЙ' : videoSrc ? 'ЭХ ВИДЕО' : 'PREVIEW'}</span>
             </div>
             {previewError && <p className="field-error" role="alert">Видео ачаалж чадсангүй. Бэлэн хувилбараа сонгоод дахин оролдоно уу.</p>}
@@ -401,7 +425,7 @@ export default function Studio({ episodeId, initialJobId, movieTitle, episodeNum
           {dubbingEnabled && health?.mode === 'live' && <details className="card clone-card"><summary>Зөвшөөрөлтэй voice clone</summary><p className="route-caption">Ашиглах эрхтэй хоолойн sample, зөвшөөрлийн лавлагаа оруулна уу.</p><form onSubmit={(event) => void cloneVoice(event)}><label>Хоолойн нэр<input maxLength={100} name="name" required /></label><label>Зөвшөөрлийн лавлагаа<input maxLength={500} name="authorizationRef" required /></label><label>Audio sample<input accept="audio/*" name="sample" required type="file" /></label><button disabled={busy} type="submit">Voice үүсгэх</button></form></details>}
         </aside>
       </div>
-      {job && <section className="card publish-box"><span className="eyebrow">05 · PREVIEW БА НИЙТЛЭХ</span><h2>Анги нийтлэх</h2><p><strong>{movieTitle} · {episodeNumber}-р анги</strong></p><p>Бэлэн файлаа preview хэсэгт тоглуулж шалгасны дараа нийтэлнэ. Render дуусахад автоматаар нийтлэгдэхгүй.</p><label>Нийтлэх хувилбар<select disabled={busy} value={publishVersion} onChange={e => { setPublishVersion(e.target.value as 'subtitles' | 'dubbed'); setApproved(false); }}><option disabled={!job.outputs?.subtitles} value="subtitles">Монгол хадмал + эх дуу{!job.outputs?.subtitles ? ' · Бэлэн биш' : ''}</option>{dubbingEnabled && <option disabled={!job.outputs?.dubbed} value="dubbed">Монгол AI дубляж{!job.outputs?.dubbed ? ' · Бэлэн биш' : ''}</option>}</select></label><label className="checkbox-row"><input type="checkbox" disabled={busy || viewedVersion !== publishVersion || !job.outputs?.[publishVersion]} checked={approved} onChange={e => setApproved(e.target.checked)}/>Эцсийн видео, хадмал, дууг шалгасан. Сонгосон ангид нийтлэхийг зөвшөөрсөн.</label><button className="primary upload-button" disabled={busy || !approved || !draft?.translationReviewed || !job.outputs?.[publishVersion]} onClick={() => void task('Нийтэлж байна…', async () => { if (dirty.current) throw Error('Эхлээд өөрчлөлтөө хадгалж, хувилбараа дахин бэлтгэнэ үү.'); await api(`/admin/episodes/${episodeId}/publish`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId: job.id, version: dubbingEnabled ? publishVersion : 'subtitles', approved: true }) }); setNotice('Анги нийтлэгдлээ. Кино нийтлэгдсэн төлөвтэй бол веб дээр харагдана.'); })}>Анги нийтлэх</button></section>}
+      {job && <section className="card publish-box"><span className="eyebrow">05 · PREVIEW БА НИЙТЛЭХ</span><h2>{publishedUrl ? 'Нийтлэгдсэн ✓' : 'Нийтлэхэд бэлэн'}</h2><p><strong>{movieTitle} · {episodeNumber}-р анги</strong></p><p>Бэлэн файлаа preview хэсэгт тоглуулж шалгасны дараа нийтэлнэ. Render дуусахад автоматаар нийтлэгдэхгүй.</p>{publishedUrl && !notice && <p><Link className="published-link" href={publishedUrl}>Үндсэн сайтаас үзэх →</Link></p>}<label>Нийтлэх хувилбар<select disabled={busy || Boolean(publishedUrl)} value={publishVersion} onChange={e => { setPublishVersion(e.target.value as 'subtitles' | 'dubbed'); setApproved(false); }}><option disabled={!job.outputs?.subtitles} value="subtitles">Монгол хадмал + эх дуу{!job.outputs?.subtitles ? ' · Бэлэн биш' : ''}</option>{dubbingEnabled && <option disabled={!job.outputs?.dubbed} value="dubbed">Монгол AI дубляж{!job.outputs?.dubbed ? ' · Бэлэн биш' : ''}</option>}</select></label><label className="checkbox-row"><input type="checkbox" disabled={busy || Boolean(publishedUrl) || viewedVersion !== publishVersion || !job.outputs?.[publishVersion]} checked={approved} onChange={e => setApproved(e.target.checked)}/>Эцсийн видео, хадмал, дууг шалгасан. Сонгосон ангид нийтлэхийг зөвшөөрсөн.</label>{!publishedUrl && <><p className="route-caption" role="status">{busy ? activity : publishBlockReason}</p><button className="primary upload-button" disabled={busy || !approved || !draft?.translationReviewed || !job.outputs?.[publishVersion] || viewedVersion !== publishVersion || dirty.current} onClick={() => void publish()}>{activity === 'Нийтэлж байна…' ? 'Нийтэлж байна…' : 'Нийтлэх'}</button></>}</section>}
       <footer>shortkinomn · Content Studio · MP4 + Монгол SRT</footer>
     </div>
   );

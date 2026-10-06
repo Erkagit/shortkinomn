@@ -112,7 +112,7 @@ platform.put('/admin/movies/:id', (req, res) => {
   }); res.json(getMovie(id, true));
 });
 platform.delete('/admin/movies/:id', (req, res) => { const id = getMovie(String(req.params.id), true).id; execute("UPDATE movies SET status='ARCHIVED' WHERE id=?", id); res.json({ ok: true }); });
-platform.get('/admin/episodes', (_req, res) => res.json(all('SELECT e.*,m.title_mn,j.job_id FROM episodes e JOIN movies m ON m.id=e.movie_id LEFT JOIN processing_jobs j ON j.job_id=(SELECT pj.job_id FROM processing_jobs pj WHERE pj.episode_id=e.id ORDER BY pj.created_at DESC,pj.rowid DESC LIMIT 1) ORDER BY m.title_mn,e.episode_number')));
+platform.get('/admin/episodes', (_req, res) => res.json(all('SELECT e.*,m.title_mn,m.slug movie_slug,j.job_id FROM episodes e JOIN movies m ON m.id=e.movie_id LEFT JOIN processing_jobs j ON j.job_id=(SELECT pj.job_id FROM processing_jobs pj WHERE pj.episode_id=e.id ORDER BY pj.created_at DESC,pj.rowid DESC LIMIT 1) ORDER BY m.title_mn,e.episode_number')));
 platform.post('/admin/episodes', (req, res) => {
   const data = z.object({ movie_id: z.string().uuid(), episode_number: z.number().int().min(1).max(10000), title: z.string().trim().min(1).max(200), is_free: z.boolean().optional() }).parse(req.body);
   getMovie(data.movie_id, true); const id = randomUUID();
@@ -129,12 +129,17 @@ platform.post('/admin/episodes/:id/publish', async (req, res) => {
   const data = z.object({ jobId: z.string().uuid(), version: z.enum(['subtitles','dubbed']).default('dubbed'), approved: z.literal(true) }).parse(req.body);
   const row = one<Episode>('SELECT * FROM episodes WHERE id=?', id);
   if (!row) throw new HttpError(404, 'Анги олдсонгүй.');
+  if (!Number.isInteger(row.episode_number) || row.episode_number < 1) throw new HttpError(409, 'Ангийн дугаар буруу байна.');
+  const movie = getMovie(row.movie_id, true);
+  if (!movie.title_mn.trim() || !movie.slug) throw new HttpError(409, 'Киноны нэр болон URL нэрийг эхлээд оруулна уу.');
   const link = one<{ episode_id: string }>('SELECT episode_id FROM processing_jobs WHERE job_id=?', data.jobId);
   if (!link || link.episode_id !== id) throw new HttpError(409, 'Энэ боловсруулалт өөр ангид хамаарна.');
   const job = await load(data.jobId);
   if (isBusy(job.id) || job.status === 'failed' || job.status === 'rendering' || !job.translationReviewed || !job.segments.length || job.segments.some(s => !s.target.trim()) || (data.version === 'dubbed' && job.status !== 'completed')) throw new HttpError(409, 'Орчуулга болон эцсийн видеог хянаж баталгаажуулна уу.');
   if (job.mode === 'demo' && process.env.NODE_ENV === 'production') throw new HttpError(409, 'Demo үр дүнг production-д нийтлэх боломжгүй.');
-  if (!await exists(path.join(dir(job.id), data.version === 'dubbed' ? 'dubbed.mp4' : 'subtitle-preview.mp4'))) throw new HttpError(409, 'Сонгосон хувилбарыг эхлээд бэлтгэж, урьдчилан үзнэ үү.');
+  if (!await exists(path.join(dir(job.id), 'source.video'))) throw new HttpError(409, 'Эх видео файл олдсонгүй. Дахин байршуулна уу.');
+  if (!await exists(path.join(dir(job.id), 'translated.mn.srt'))) throw new HttpError(409, 'Монгол хадмал бэлэн болоогүй байна.');
+  if (!await exists(path.join(dir(job.id), data.version === 'dubbed' ? 'dubbed.mp4' : 'subtitle-preview.mp4'))) throw new HttpError(409, data.version === 'dubbed' ? 'Дубляжтай боловсруулсан видео олдсонгүй.' : 'Хадмалтай боловсруулсан видео олдсонгүй.');
   const media = await mediaStorage.put(path.join(dir(job.id), data.version === 'dubbed' ? 'dubbed.mp4' : 'subtitle-preview.mp4'), 'mp4');
   const vtt = path.join(dir(job.id), 'published.mn.vtt');
   await fs.writeFile(vtt, subtitleFile(job.segments, 'vtt'));
@@ -142,7 +147,9 @@ platform.post('/admin/episodes/:id/publish', async (req, res) => {
   transaction(() => {
     execute("UPDATE episodes SET media_key=?,subtitle_key=?,duration=?,status='PUBLISHED' WHERE id=?", media, subtitle, job.duration, id);
     execute('INSERT INTO subtitles(id,episode_id,storage_key) VALUES(?,?,?) ON CONFLICT(episode_id,language) DO UPDATE SET storage_key=excluded.storage_key', randomUUID(), id, subtitle);
-  }); res.json({ ok: true });
+    execute("UPDATE movies SET status='PUBLISHED',updated_at=CURRENT_TIMESTAMP WHERE id=?", movie.id);
+  });
+  res.json({ ok: true, episodeId: id, movie: { id: movie.id, slug: movie.slug, title_mn: movie.title_mn, status: 'PUBLISHED' }, publicUrl: `/movies/${encodeURIComponent(movie.slug)}` });
 });
 for (const table of ['categories','genres'] as const) {
   platform.get(`/admin/${table}`, (_req, res) => res.json(all(`SELECT * FROM ${table} ORDER BY name`)));
@@ -153,5 +160,3 @@ platform.get('/admin/payments', (_req, res) => res.json(all('SELECT p.*,u.email,
 platform.post('/admin/payments/:id/verify', (req, res) => { const { transactionId } = z.object({ transactionId: z.string().trim().min(3).max(160) }).parse(req.body); settle(String(req.params.id), req.user!.id, transactionId); res.json({ ok: true }); });
 platform.get('/admin/users', (_req, res) => res.json(all('SELECT id,email,name,role,created_at FROM users ORDER BY created_at DESC')));
 platform.get('/admin/settings', (_req, res) => res.json({ paymentProvider: paymentProvider.name, paymentEnabled: !!paymentProvider.instructions, paymentInstructions: paymentProvider.instructions, storage: 'Private local storage', freeEpisodesDefault: 5 }));
-
-

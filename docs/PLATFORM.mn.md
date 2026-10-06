@@ -118,7 +118,8 @@ authorization → responsive/error/SEO гэсэн үе шатаар нэмсэн
 5. `npm.cmd run dev`, дараа `/login` → `/admin`.
 6. Category → movie → episode → upload → prepare → transcript review → translate →
    translation review → subtitle render эсвэл dubbing render → preview → approve → publish.
-7. Movie status `PUBLISHED` болсны дараа public catalog-д гарна.
+7. Admin publish нь episode media/subtitles болон movie-ийн `PUBLISHED` төлөвийг нэг transaction-д
+   хадгална. Нийтлэгдсэн movie public catalog/detail, episode watch болон stream route-д шууд гарна.
 
 Өөр API хаяг хэрэглэвэл web талд `API_INTERNAL_URL`-г build болон runtime хоёуланд өгнө.
 `DATA_DIR`, `DATABASE_PATH`-аар хадгалах замыг өөрчилж болно.
