@@ -4,8 +4,6 @@ Public streaming UI, хамгаалагдсан admin CMS, SQLite metadata, auth
 
 Upload 500 оношилгоо, A/V timestamp normalize, цуцлалт, давхар төлбөрөөс хамгаалсан retry болон шалгалтын тайлан: [docs/RELIABILITY.mn.md](docs/RELIABILITY.mn.md).
 
-Эхний production хувилбар **автомат Монгол хадмал + эх дуу** ашиглана. Dubbing, voice mapping, TTS, voice clone код хадгалагдсан боловч студид түр идэвхгүй (`apps/web/lib/features.ts`). Хадмалын ажил TTS болон арын дуу салгах API дуудахгүй.
-
 ## Production ажиллуулах
 
 `apps/api/.env` дотор OpenAI болон ElevenLabs түлхүүр, FFmpeg/FFprobe зам тохируулна. Энэ урсгалд ElevenLabs **Speech to Text** эрх хэрэгтэй; Models/Voices Read эсвэл Text to Speech эрх ашиглахгүй.
