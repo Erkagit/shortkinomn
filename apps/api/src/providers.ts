@@ -64,18 +64,30 @@ export async function separate(root:string){
   // Never extract archive paths; only the selected bytes to our fixed filename.
   const raw=path.join(root,'bed-from-api.audio');await fs.writeFile(raw,bed[0].getData());await normalize(raw,path.join(root,'bed.wav'));
 }
-export function validateBatch(data:unknown,segments:Segment[]){const out=batchSchema.parse(data);if(JSON.stringify(out.lines.map(x=>x.id))!==JSON.stringify(segments.map(x=>x.id)))throw Error('Орчуулгын ID эсвэл дараалал зөрсөн.');for(const l of out.lines)if(!/[А-Яа-яӨөҮү]/.test(l.text)||/[\[\]]/.test(l.text))throw Error('Монгол кирилл текст шаардлагатай.');return out;}
+export function validateBatch(data:unknown,segments:Segment[]){
+  const parsed=batchSchema.safeParse(data);
+  if(!parsed.success)throw new HttpError(502,'Орчуулгын API буруу бүтэцтэй хариу өглөө.','INVALID_PROVIDER_RESPONSE');
+  const out=parsed.data;
+  if(JSON.stringify(out.lines.map(x=>x.id))!==JSON.stringify(segments.map(x=>x.id)))throw new HttpError(502,'Орчуулгын API бүх мөрийг ижил дарааллаар буцаасангүй. Алга болсон мөрийг үргэлжлүүлэхийн тулд дахин оролдоно уу.','INVALID_PROVIDER_RESPONSE');
+  for(const line of out.lines)if(!/[А-Яа-яӨөҮү]/.test(line.text)||/[\[\]]/.test(line.text))throw new HttpError(502,'Орчуулгын API Монгол кириллээр бүрэн орчуулсангүй.','INVALID_PROVIDER_RESPONSE');
+  return out;
+}
 export async function translate(job:Job,targets:Segment[],before:Segment[],after:Segment[],root:string,feedback?:unknown){
   if(config.mode==='demo')return {lines:targets.map((s,i)=>({id:s.id,text:i%2?'Видеоны хугацааг шалгаж байна.':'Сайн байна уу? Энэ бол туршилт.',needsReview:false,reason:''}))};
   if(!config.openai)throw new HttpError(503,'OPENAI_API_KEY тохируулаагүй.','PROVIDER_NOT_CONFIGURED');
   const prompt = job.outputMode === 'subtitles' && !feedback ? subtitlePrompt : dubbingPrompt;
-  const payload={context:job.context,before,after,targets:targets.map(s=>({...s,targetSeconds:s.end-s.start})),feedback};
+  // Context is read-only. Do not send its segment IDs: models can mistake after-context IDs for targets.
+  const payload={context:job.context,before:before.map(s=>({source:s.source,speaker:s.speaker})),after:after.map(s=>({source:s.source,speaker:s.speaker})),targets:targets.map(s=>({...s,targetSeconds:s.end-s.start})),feedback};
   const cache=await cachePath(root,{prompt,payload,model:config.translationModel,schema:jsonSchema},'.json');
   if(await exists(cache))return validateBatch(JSON.parse(await fs.readFile(cache,'utf8')),targets);
   const raw=await paidCache(cache+'.response.json',async()=>{const r=await request('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${config.openai}`,'Content-Type':'application/json'},body:JSON.stringify({model:config.translationModel,store:false,input:[{role:'system',content:prompt},{role:'user',content:JSON.stringify(payload)}],text:{format:{type:'json_schema',name:'mongolian_dialogue',strict:true,schema:jsonSchema}},max_output_tokens:6000})});return new Uint8Array(await r.arrayBuffer());});
-  const data:any=JSON.parse(raw.toString('utf8'));if(data.status!=='completed')throw new HttpError(502,'Орчуулгын хариу дутуу байна. Хадгалсан хариуг шалгана уу; төлбөртэй хүсэлтийг автоматаар давтаагүй.','INVALID_PROVIDER_RESPONSE');
+  let data:any;
+  try{data=JSON.parse(raw.toString('utf8'));}catch{throw new HttpError(502,'Орчуулгын API буруу бүтэцтэй хариу өглөө.','INVALID_PROVIDER_RESPONSE');}
+  if(data.status!=='completed')throw new HttpError(502,'Орчуулгын хариу дутуу байна. Хадгалсан хариуг шалгана уу; төлбөртэй хүсэлтийг автоматаар давтаагүй.','INVALID_PROVIDER_RESPONSE');
   const text=(data.output||[]).flatMap((x:any)=>x.content||[]).filter((x:any)=>x.type==='output_text').map((x:any)=>x.text).join('');
-  const out=validateBatch(JSON.parse(text),targets);await fs.writeFile(cache,JSON.stringify(out));return out;
+  let responseData:unknown;
+  try{responseData=JSON.parse(text);}catch{throw new HttpError(502,'Орчуулгын API буруу бүтэцтэй хариу өглөө.','INVALID_PROVIDER_RESPONSE');}
+  const out=validateBatch(responseData,targets);await fs.writeFile(cache,JSON.stringify(out));return out;
 }
 export async function checkTts(){if(config.mode==='demo')return;requireKeys();const r=await request('https://api.elevenlabs.io/v1/models',{headers:{'xi-api-key':config.eleven}});const models:any=await r.json();const m=models.find((x:any)=>x.model_id===config.ttsModel);if(!m?.can_do_text_to_speech||!m.languages?.some((x:any)=>['mn','mon'].includes(x.language_id)))throw Error('Тохируулсан TTS model Монгол хэл дэмжиж байгааг баталж чадсангүй.');}
 export async function tts(text:string,voice:string,root:string,seconds:number){

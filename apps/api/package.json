@@ -12,16 +12,17 @@
     "demo": "node --import tsx src/demo.ts"
   },
   "dependencies": {
-    "express": "^5.2.0",
-    "multer": "^2.0.2",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "adm-zip": "^0.6.1",
     "dotenv": "^17.0.0",
-    "zod": "^3.25.0",
-    "adm-zip": "^0.5.16"
+    "express": "^5.2.0",
+    "ffmpeg-static": "^5.3.0",
+    "multer": "^2.0.2",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
-    "tsx": "^4.20.0",
     "@types/express": "^5.0.0",
     "@types/multer": "^2.0.0",
-    "@types/adm-zip": "^0.5.7"
+    "tsx": "^4.20.0"
   }
 }

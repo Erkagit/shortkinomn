@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: shortkinomn
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 120
+    disk:
+      name: shortkinomn-data
+      mountPath: /var/data
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PROVIDER_MODE
+        value: live
+      - key: API_PORT
+        value: 4000
+      - key: API_INTERNAL_URL
+        value: http://127.0.0.1:4000
+      - key: DATA_DIR
+        value: /var/data
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

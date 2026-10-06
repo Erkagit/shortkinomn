@@ -5,6 +5,10 @@ import {alignSource,sourceFile} from './media.js';
 import {randomUUID} from 'node:crypto';
 import {context,HttpError,publicError,errorFields,log,checkCancelled} from './runtime.js';
 const busy=new Map<string,{controller:AbortController;action:string}>();
+function subtitleFilterPath(file:string){
+  // FFmpeg filtergraph syntax treats drive letters and punctuation specially.
+  return file.replace(/\\/g,'/').replace(/^([A-Za-z]):/,'$1\\:').replace(/([',;\[\]])/g,'\\$1');
+}
 export function isBusy(id:string){return busy.has(id);}
 export function cancel(id:string){busy.get(id)?.controller.abort();}
 export async function launch(id:string,action:NonNullable<Job['lastAction']>,allowUncertain=false){
@@ -15,8 +19,8 @@ export async function launch(id:string,action:NonNullable<Job['lastAction']>,all
   try{
     job=await load(id);
     if(job.mode!==config.mode)throw new HttpError(409,'Энэ ажил өөр горимд үүссэн. Шинэ видео оруулна уу.','MODE_CHANGED');
-    // Replaying a successful automatic request must never repeat provider calls or erase approval.
-    if(action==='subtitle_auto'&&job.outputMode==='subtitles'&&job.status==='translation_ready'&&(await Promise.all(['subtitle-preview.mp4','preview.mn.vtt','translated.mn.srt'].map(file=>exists(path.join(dir(id),file))))).every(Boolean)){busy.delete(id);return {accepted:true,duplicate:true};}
+    // Existing subtitle previews may predate burned-in subtitles. Re-running this
+    // action reuses completed transcript/translation data and refreshes the MP4.
     delete job.error;delete job.errorCode;job.lastAction=action;job.runActive=true;job.startedAt=new Date().toISOString();delete job.finishedAt;job.requestId=context.getStore()?.requestId||randomUUID();await save(job);
   }catch(error){busy.delete(id);throw error;}
   const current=job;
@@ -62,17 +66,28 @@ async function execute(job:Job,action:'prepare'|'translate'|'render'|'subtitles'
   if(!job.transcriptDone)throw new HttpError(422,'Эхлээд яриа салгана уу.');validateTimeline(job.segments,job.duration);
   if(action==='translate'){
     if(!job.transcriptReviewed&&!automaticPreview)throw new HttpError(422,'Эх яриаг шалгаж баталгаажуулна уу.');job.status='translating';await progress(job,'Монгол орчуулга хийж байна…');
-    for(let i=0;i<job.segments.length;i+=15){const targets=job.segments.slice(i,i+15);if(targets.every(s=>s.target))continue;const out=await translate(job,targets,job.segments.slice(Math.max(0,i-6),i),job.segments.slice(i+15,i+21),root);
-      out.lines.forEach((l,k)=>{targets[k].target=l.text;targets[k].flags=targets[k].flags.filter(f=>!f.startsWith('translation:'));if(l.needsReview)targets[k].flags.push(`translation:${l.reason}`);});await progress(job,`${Math.min(i+15,job.segments.length)}/${job.segments.length} мөр орчуулсан.`);}
+    const batchSize=job.outputMode==='subtitles'?5:15;
+    for(let i=0;i<job.segments.length;i+=batchSize){const targets=job.segments.slice(i,i+batchSize);if(targets.every(s=>s.target))continue;
+      const before=job.segments.slice(Math.max(0,i-6),i),after=job.segments.slice(i+batchSize,i+batchSize+6);
+      let out;
+      try{out=await translate(job,targets,before,after,root);}
+      catch(error){
+        if(job.outputMode!=='subtitles'||!(error instanceof HttpError)||error.code!=='INVALID_PROVIDER_RESPONSE')throw error;
+        log('subtitle_batch_fallback',{batchSize:targets.length});
+        const lines=[];
+        for(const segment of targets)lines.push(...(await translate(job,[segment],before,after,root)).lines);
+        out={lines};
+      }
+      out.lines.forEach((l,k)=>{targets[k].target=l.text;targets[k].flags=targets[k].flags.filter(f=>!f.startsWith('translation:'));if(l.needsReview)targets[k].flags.push(`translation:${l.reason}`);});await progress(job,`${Math.min(i+batchSize,job.segments.length)}/${job.segments.length} мөр орчуулсан.`);}
     job.translationReviewed=false;job.status='translation_ready';await progress(job,'Монгол орчуулгыг хянаж баталгаажуулна уу.');return;
   }
   if((!job.translationReviewed&&!automaticPreview)||!job.segments.every(s=>s.target.trim()))throw new HttpError(422,'Орчуулгаа шалгаж баталгаажуулна уу.');
   if(action==='subtitles'){
-    if(await exists(path.join(root,'subtitle-preview.mp4'))&&await exists(path.join(root,'preview.mn.vtt'))&&await exists(path.join(root,'translated.mn.srt'))){job.status='translation_ready';return;}
     job.status='rendering';await progress(job,'Хадмалтай хувилбар бэлтгэж байна…');
-    await ff('-i',await sourceFile(root),'-map','0:v:0','-map','0:a:0','-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart',path.join(root,'subtitle-rendering.mp4'));
     await fs.writeFile(path.join(root,'translated.mn.srt'),subtitleFile(job.segments,'srt'));
     await fs.writeFile(path.join(root,'preview.mn.vtt'),subtitleFile(job.segments,'vtt'));
+    const subtitlePath=subtitleFilterPath(path.join(root,'translated.mn.srt'));
+    await ff('-i',await sourceFile(root),'-vf',`subtitles='${subtitlePath}'`,'-map','0:v:0','-map','0:a:0','-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart',path.join(root,'subtitle-rendering.mp4'));
     await fs.rename(path.join(root,'subtitle-rendering.mp4'),path.join(root,'subtitle-preview.mp4'));
     job.status='translation_ready';await progress(job,'Хадмалтай хувилбар бэлэн. Хянаад нийтэлнэ үү.');return;
   }

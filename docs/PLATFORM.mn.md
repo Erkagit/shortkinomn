@@ -170,6 +170,29 @@ node scripts/browser-smoke.mjs
 үзэхгүй: бодит gateway, объект хадгалалт/CDN, domain/HTTPS, ажиллагааны хяналт болон
 бодит контентын setup эндээс гадна үлдэнэ.
 
+#### Vercel-ийн хязгаарлалт
+
+Одоогийн API-г Vercel Function болгон шууд байршуулж болохгүй. Express API нь
+нэг удаан ажиллах Node.js процесс, `node:sqlite` database, JSON job state,
+`data/jobs`/`data/media` доторх байнгын файл, 200 MB хүртэлх upload, мөн FFmpeg/
+FFprobe child process шаарддаг. Vercel-ийн function filesystem нь байнгын storage биш;
+function instance бүр тусдаа тул SQLite болон worker-ийн state-ийг хуваалцахгүй.
+Том multipart upload болон урт медиа боловсруулалтыг web function proxy-гоор дамжуулах
+нь timeout/request-ийн хязгаартай, production-д найдвартай биш.
+
+Иймээс Vercel-д одоогоор зөвхөн `apps/web`-ийг байршуулж болно; харин public SSR,
+login, studio, upload, subtitle болон playback нь API-с хамаарах тул тэдгээрийг
+ажиллуулсан гэж тооцохгүй. Web build/runtime-д `API_INTERNAL_URL`-г хүрч болох
+API endpoint руу, API дээр `WEB_ORIGIN`-г `https://shortkino.mn` руу тохируулах
+шаардлагатай. Одоогийн API `127.0.0.1` дээр listen хийдэг бөгөөд тусдаа host дээр
+шууд хүрэхээр тохируулаагүй.
+
+Бүрэн production ашиглалтаас өмнө API/FFmpeg-д зориулсан тогтвортой Node worker,
+managed database, private object storage + entitlement шалгасан streaming/CDN,
+том файлыг browser-оос storage руу шууд оруулах, processing queue хэрэгтэй.
+Эдгээр нь production data/media/auth урсгалыг өөрчлөх архитектурын ажил тул энэ
+аудитад сольж, туршилтгүйгээр production руу шилжүүлээгүй.
+
 - SQLite + JSON worker нь нэг API instance-д зориулсан. Олон instance бол PostgreSQL,
   shared queue, distributed rate limiter/locks, worker recovery хэрэгтэй.
 - `MediaStorage`-г object storage adapter-аар сольж, зөвшөөрөл шалгасны дараа богино

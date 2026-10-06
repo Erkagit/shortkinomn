@@ -14,6 +14,7 @@ async function proxy(request:Request){
   if(Number(request.headers.get('content-length'))>maxBody)return failure(413,'UPLOAD_TOO_LARGE','Файлын хэмжээ хэтэрсэн байна. Нэг файл 200 MB хүртэл байна.');
   const headers=new Headers(request.headers);
   for(const name of hopHeaders)headers.delete(name);
+  headers.set('x-forwarded-host',request.headers.get('host')||'');
   headers.set('x-request-id',requestId);
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(new DOMException('Timeout','TimeoutError')),300000);

@@ -6,6 +6,7 @@ import path from 'node:path';
 import {ff,inspect,alignSource,sourceFile,probe,extract,run} from '../src/media.js';
 import {paidCache} from '../src/provider-cache.js';
 import {context,HttpError,publicError} from '../src/runtime.js';
+import {validateBatch} from '../src/providers.js';
 import {responsePayload,ApiError} from '../../web/lib/api-error.js';
 
 async function temporary(work:(root:string)=>Promise<void>){const root=await fs.mkdtemp(path.join(os.tmpdir(),'shortkinomn-test-'));try{await work(root);}finally{assert.ok(path.resolve(root).startsWith(path.resolve(os.tmpdir())+path.sep)&&path.basename(root).startsWith('shortkinomn-test-'));await fs.rm(root,{recursive:true,force:true});}}
@@ -48,3 +49,13 @@ test('ambiguous paid calls are blocked on retry until explicitly approved, then 
   assert.equal((await paidCache(file,async()=>{calls++;return Buffer.from('wrong');})).toString(),'ok');assert.equal(calls,2);
 }));
 test('known provider rejection may be retried without ambiguous marker',()=>temporary(async root=>{const file=path.join(root,'response');await assert.rejects(()=>paidCache(file,async()=>{throw new HttpError(502,'Quota','PROVIDER_REJECTED');}));assert.equal((await paidCache(file,async()=>Buffer.from('ok'))).toString(),'ok');}));
+test('incomplete translation responses become actionable provider errors',()=>{
+  const segments:Parameters<typeof validateBatch>[1]=[
+    {id:'s0',start:0,end:1,speaker:'speaker_0',source:'source one',target:'',flags:[]},
+    {id:'s1',start:1,end:2,speaker:'speaker_0',source:'source two',target:'',flags:[]},
+  ];
+  assert.throws(()=>validateBatch({lines:[{id:'s0',text:'Сайн байна уу',needsReview:false,reason:''}]},segments),
+    (error:unknown)=>error instanceof HttpError&&error.status===502&&error.code==='INVALID_PROVIDER_RESPONSE');
+  assert.throws(()=>validateBatch({lines:[{id:'s0',text:'Hello',needsReview:false,reason:''},{id:'s1',text:'Баяртай',needsReview:false,reason:''}]},segments),
+    (error:unknown)=>error instanceof HttpError&&error.status===502&&error.code==='INVALID_PROVIDER_RESPONSE');
+});
