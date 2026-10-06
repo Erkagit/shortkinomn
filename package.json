@@ -1,0 +1,30 @@
+{
+  "name": "mn-dub-ts",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "start": "node scripts/start.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "check:live": "node --import tsx scripts/live-check.mjs",
+    "dev": "concurrently -k -n API,WEB \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "build": "npm run build -w apps/api && npm run build -w apps/web",
+    "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/web",
+    "test": "node scripts/test.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "setup": "node scripts/setup.mjs",
+    "demo": "npm run demo -w apps/api",
+    "smoke": "npm run build -w apps/api && node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0"
+  }
+}

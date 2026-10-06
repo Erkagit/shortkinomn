@@ -1,0 +1,473 @@
+{
+  "checkedAt": "2026-10-01T01:41:31.532Z",
+  "mode": "demo",
+  "results": [
+    {
+      "url": "http://127.0.0.1:4040/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "requestId": "5cf477e4-d898-472d-a682-337582b35d47"
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/health",
+      "method": "GET",
+      "status": 200,
+      "requestId": "7058a225-b4cd-4500-bc13-1349f61044cd"
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/jobs",
+      "method": "GET",
+      "status": 200,
+      "requestId": "48e389b9-4856-42b2-96e8-ad7dd64bec38"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/health",
+      "method": "GET",
+      "status": 200,
+      "requestId": "27d7c519-4e26-43f6-baa9-cb0f29b4ec57"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "GET",
+      "status": 200,
+      "requestId": "7dc265ed-7dc6-48a2-a81e-0768748468fd"
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/admin/movies",
+      "method": "POST",
+      "status": 201,
+      "requestId": "6e73747e-5adb-49f8-8ca9-82b1b712e5dc"
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/admin/episodes",
+      "method": "POST",
+      "status": 201,
+      "requestId": "211089cc-7031-4962-96e7-5259b6cbdca4"
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "requestId": "047f7767-f6b2-4487-a9c0-5d26a921e1df",
+      "elapsedMs": 716
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/jobs",
+      "method": "POST",
+      "bytes": 33554432,
+      "status": 201,
+      "requestId": "2ad6eedb-cb87-4364-aa63-eb17d8b46727",
+      "elapsedMs": 902
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "requestId": "c3660ac7-a690-4849-9a61-f68a0bff392e",
+      "elapsedMs": 749
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 33554432,
+      "status": 201,
+      "requestId": "719fe598-297b-4c98-9a7d-b8658bcbd83d",
+      "elapsedMs": 1187
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 11,
+      "status": 400,
+      "requestId": "e5a8e930-c34c-4339-a335-b7fc97da7692",
+      "elapsedMs": 30,
+      "error": {
+        "code": "UNSUPPORTED_FILE",
+        "message": "MP4, MOV, MKV эсвэл WebM видео сонгоно уу.",
+        "requestId": "e5a8e930-c34c-4339-a335-b7fc97da7692"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 11,
+      "status": 422,
+      "requestId": "1e0caead-da64-4071-bddf-62eac7a88b26",
+      "elapsedMs": 781,
+      "error": {
+        "code": "INVALID_MEDIA",
+        "message": "Видео боловсруулах боломжгүй байна. Файл эвдэрсэн эсэх, аудио болон видео track-ийг шалгана уу.",
+        "requestId": "1e0caead-da64-4071-bddf-62eac7a88b26"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 210763776,
+      "status": 413,
+      "requestId": "891667e4-d09c-45cc-a8d9-36b7813e3d2b",
+      "elapsedMs": 1416,
+      "error": {
+        "code": "UPLOAD_TOO_LARGE",
+        "message": "Файл 200 MB-аас хэтэрсэн байна.",
+        "requestId": "891667e4-d09c-45cc-a8d9-36b7813e3d2b"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 210763776,
+      "status": 413,
+      "requestId": "d242cf10-05f7-4dea-bc53-371ff707adaf",
+      "elapsedMs": 1960,
+      "error": {
+        "code": "UPLOAD_TOO_LARGE",
+        "message": "Файл 200 MB-аас хэтэрсэн байна.",
+        "requestId": "d242cf10-05f7-4dea-bc53-371ff707adaf"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "requestId": "b0115602-8e39-4bc3-82b0-e17fa2c8bea6",
+      "elapsedMs": 812
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "requestId": "429419a8-26f8-4fd6-a530-54f722419369",
+      "elapsedMs": 37
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 33554432,
+      "status": 409,
+      "requestId": "df2876c5-3c21-4990-9e22-4716e07c9ea5",
+      "elapsedMs": 178,
+      "error": {
+        "code": "UPLOAD_IN_PROGRESS",
+        "message": "Энэ видео серверт орж байна. Түр хүлээгээд дахин оролдоно уу.",
+        "requestId": "df2876c5-3c21-4990-9e22-4716e07c9ea5"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 33554432,
+      "status": 201,
+      "requestId": "22323f5f-09bf-4346-b112-646aa3592a2c",
+      "elapsedMs": 1297
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "requestId": "1b388be7-7e89-4037-864d-ec4f11603778",
+      "elapsedMs": 819
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 32851,
+      "status": 201,
+      "requestId": "4138b32c-ff75-4663-a106-7d6bff8696f2",
+      "elapsedMs": 841
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/52f57634-8d6b-4f99-b0ce-68baaacbd4bf/subtitle_auto",
+      "method": "POST",
+      "status": 202,
+      "requestId": "505845e1-0cff-427d-9d41-d589a9316b60"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/52f57634-8d6b-4f99-b0ce-68baaacbd4bf/subtitle_auto",
+      "method": "POST",
+      "status": 202,
+      "requestId": "abe721f1-eb4e-40b7-9bea-bde03702b847"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/1927cfd4-72fc-422b-b62e-c395658ab205/subtitle_auto",
+      "method": "POST",
+      "status": 409,
+      "requestId": "70202d13-da04-4c77-b567-9b8ef2bf5d69",
+      "error": {
+        "code": "WORKER_BUSY",
+        "message": "Өөр ажил боловсруулж байна. Дууссаны дараа оролдоно уу.",
+        "requestId": "70202d13-da04-4c77-b567-9b8ef2bf5d69"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/1927cfd4-72fc-422b-b62e-c395658ab205/subtitle_auto",
+      "method": "POST",
+      "status": 202,
+      "requestId": "e96b6971-6697-45f8-85bf-46d5053172b5"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/1927cfd4-72fc-422b-b62e-c395658ab205/cancel",
+      "method": "POST",
+      "status": 202,
+      "requestId": "dcf2c44f-c504-434f-ad18-61e6d94a57b6"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/1927cfd4-72fc-422b-b62e-c395658ab205/subtitle_auto",
+      "method": "POST",
+      "status": 202,
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8"
+    },
+    {
+      "check": "idempotency, concurrent uploads, upload cancellation, offset → preview, range, duplicate action, worker busy, cancel and resume",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "method": "GET",
+      "status": 200,
+      "requestId": "3ce2682d-e927-45a4-a6df-c0644669f63d",
+      "error": "Сервер дахин ассан. Дууссан шат хадгалагдсан. Үргэлжлүүлэхэд хариу нь тодорхойгүй төлбөртэй хүсэлтийг автоматаар давтахгүй."
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs/52f57634-8d6b-4f99-b0ce-68baaacbd4bf/subtitle_auto",
+      "method": "POST",
+      "status": 202,
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5"
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 503,
+      "requestId": "d690402c-af50-4fc5-afb1-369e93dbe4ef",
+      "elapsedMs": 40,
+      "error": {
+        "code": "MEDIA_UNAVAILABLE",
+        "message": "FFmpeg/FFprobe ажиллахгүй байна. Серверийн executable зам болон эрхийг шалгана уу.",
+        "requestId": "d690402c-af50-4fc5-afb1-369e93dbe4ef"
+      }
+    },
+    {
+      "check": "restart between stages preserves transcript, cleans partials, resumes; missing FFprobe returns 503",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "GET",
+      "status": 503,
+      "requestId": "10954c30-075e-43a2-ae05-297834859d82",
+      "error": {
+        "code": "BACKEND_UNAVAILABLE",
+        "message": "API сервертэй холбогдож чадсангүй. Сервер ажиллаж байгаа эсэхийг шалгаад дахин оролдоно уу.",
+        "requestId": "10954c30-075e-43a2-ae05-297834859d82"
+      }
+    }
+  ],
+  "proxyConnectionRefused": false,
+  "logEvidence": [
+    {
+      "time": "2026-10-01T01:41:24.612Z",
+      "event": "job_stage",
+      "requestId": "505845e1-0cff-427d-9d41-d589a9316b60",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "prepare",
+      "action": "prepare"
+    },
+    {
+      "time": "2026-10-01T01:41:26.042Z",
+      "event": "request_failed",
+      "requestId": "70202d13-da04-4c77-b567-9b8ef2bf5d69",
+      "errorType": "Error",
+      "technicalCode": "WORKER_BUSY",
+      "code": "WORKER_BUSY",
+      "status": 409
+    },
+    {
+      "time": "2026-10-01T01:41:26.118Z",
+      "event": "source_timeline_aligned",
+      "requestId": "505845e1-0cff-427d-9d41-d589a9316b60",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "prepare",
+      "videoStart": 0,
+      "audioStart": 0.47678,
+      "offsetSeconds": 0.47678
+    },
+    {
+      "time": "2026-10-01T01:41:26.916Z",
+      "event": "job_stage",
+      "requestId": "505845e1-0cff-427d-9d41-d589a9316b60",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "translate",
+      "action": "translate"
+    },
+    {
+      "time": "2026-10-01T01:41:26.923Z",
+      "event": "job_stage",
+      "requestId": "505845e1-0cff-427d-9d41-d589a9316b60",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "subtitles",
+      "action": "subtitles"
+    },
+    {
+      "time": "2026-10-01T01:41:27.695Z",
+      "event": "job_finished",
+      "requestId": "505845e1-0cff-427d-9d41-d589a9316b60",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "subtitles",
+      "status": "translation_ready",
+      "durationMs": 3083
+    },
+    {
+      "time": "2026-10-01T01:41:27.798Z",
+      "event": "job_started",
+      "requestId": "e96b6971-6697-45f8-85bf-46d5053172b5",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "action": "subtitle_auto"
+    },
+    {
+      "time": "2026-10-01T01:41:27.798Z",
+      "event": "job_stage",
+      "requestId": "e96b6971-6697-45f8-85bf-46d5053172b5",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "subtitle_auto",
+      "action": "subtitle_auto"
+    },
+    {
+      "time": "2026-10-01T01:41:27.798Z",
+      "event": "job_stage",
+      "requestId": "e96b6971-6697-45f8-85bf-46d5053172b5",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "prepare",
+      "action": "prepare"
+    },
+    {
+      "time": "2026-10-01T01:41:28.461Z",
+      "event": "job_finished",
+      "requestId": "e96b6971-6697-45f8-85bf-46d5053172b5",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "prepare",
+      "status": "cancelled",
+      "durationMs": 663
+    },
+    {
+      "time": "2026-10-01T01:41:28.500Z",
+      "event": "job_started",
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "action": "subtitle_auto"
+    },
+    {
+      "time": "2026-10-01T01:41:28.500Z",
+      "event": "job_stage",
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "subtitle_auto",
+      "action": "subtitle_auto"
+    },
+    {
+      "time": "2026-10-01T01:41:28.500Z",
+      "event": "job_stage",
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "prepare",
+      "action": "prepare"
+    },
+    {
+      "time": "2026-10-01T01:41:29.937Z",
+      "event": "job_stage",
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "translate",
+      "action": "translate"
+    },
+    {
+      "time": "2026-10-01T01:41:29.943Z",
+      "event": "job_stage",
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "subtitles",
+      "action": "subtitles"
+    },
+    {
+      "time": "2026-10-01T01:41:30.800Z",
+      "event": "job_finished",
+      "requestId": "8db1254c-a568-4c08-951d-c6e0ba179ab8",
+      "jobId": "1927cfd4-72fc-422b-b62e-c395658ab205",
+      "stage": "subtitles",
+      "status": "translation_ready",
+      "durationMs": 2300
+    },
+    {
+      "time": "2026-10-01T01:41:31.210Z",
+      "event": "job_started",
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "action": "subtitle_auto"
+    },
+    {
+      "time": "2026-10-01T01:41:31.211Z",
+      "event": "job_stage",
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "subtitle_auto",
+      "action": "subtitle_auto"
+    },
+    {
+      "time": "2026-10-01T01:41:31.211Z",
+      "event": "job_stage",
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "prepare",
+      "action": "prepare"
+    },
+    {
+      "time": "2026-10-01T01:41:31.214Z",
+      "event": "job_stage",
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "translate",
+      "action": "translate"
+    },
+    {
+      "time": "2026-10-01T01:41:31.218Z",
+      "event": "job_stage",
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "subtitles",
+      "action": "subtitles"
+    },
+    {
+      "time": "2026-10-01T01:41:31.223Z",
+      "event": "job_finished",
+      "requestId": "7f1e1b19-1054-482e-8b2d-6dbc275b8ca5",
+      "jobId": "52f57634-8d6b-4f99-b0ce-68baaacbd4bf",
+      "stage": "subtitles",
+      "status": "translation_ready",
+      "durationMs": 13
+    },
+    {
+      "time": "2026-10-01T01:41:31.500Z",
+      "event": "request_failed",
+      "requestId": "d690402c-af50-4fc5-afb1-369e93dbe4ef",
+      "errorType": "Error",
+      "technicalCode": "MEDIA_UNAVAILABLE",
+      "code": "MEDIA_UNAVAILABLE",
+      "status": 503
+    },
+    {
+      "event": "proxy_error",
+      "requestId": "10954c30-075e-43a2-ae05-297834859d82",
+      "method": "GET",
+      "path": "/api/jobs",
+      "status": 503,
+      "code": "BACKEND_UNAVAILABLE",
+      "durationMs": 3
+    }
+  ],
+  "unhandled": []
+}

@@ -1,0 +1,93 @@
+{
+  "checkedAt": "2026-09-30T10:24:02.650Z",
+  "mode": "demo",
+  "results": [
+    {
+      "url": "http://127.0.0.1:4040/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/health",
+      "method": "GET",
+      "status": 200,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/jobs",
+      "method": "GET",
+      "status": 200,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/health",
+      "method": "GET",
+      "status": 200,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "GET",
+      "status": 200,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/admin/movies",
+      "method": "POST",
+      "status": 201,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/admin/episodes",
+      "method": "POST",
+      "status": 201,
+      "requestId": null
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "elapsedMs": 728
+    },
+    {
+      "url": "http://127.0.0.1:4040/api/jobs",
+      "method": "POST",
+      "bytes": 33554432,
+      "status": 201,
+      "elapsedMs": 1004
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 82671,
+      "status": 201,
+      "elapsedMs": 774
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 33554432,
+      "status": 201,
+      "elapsedMs": 878
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "POST",
+      "bytes": 11,
+      "status": 400,
+      "elapsedMs": 7,
+      "error": "MP4, MOV, MKV эсвэл WebM видео сонгоно уу."
+    },
+    {
+      "url": "http://127.0.0.1:3040/api/jobs",
+      "method": "GET",
+      "status": 500,
+      "requestId": null,
+      "nonJson": true
+    }
+  ],
+  "proxyConnectionRefused": true,
+  "unhandled": []
+}
